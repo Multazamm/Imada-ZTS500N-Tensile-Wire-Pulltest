@@ -592,10 +592,6 @@ class PullTesterApp:
             print(f"Serial write (not connected): {data.strip()}")
     
     def write_arduino(self, data: bytes):
-        """
-        Kirim perintah bytes ke Arduino via serial.
-        data harus bertipe bytes, contoh: b'start\\n' atau b'stop\\n'
-        """
         if self.arduino_port and self.arduino_port.is_open:
             try:
                 self.arduino_port.write(data)
@@ -618,7 +614,6 @@ class PullTesterApp:
                     print(f"Serial read error (Arduino): {e}")
             time.sleep(0.01)
 
-    # ✅ FIX: Proses queue balasan dari Arduino
     def process_arduino_queue(self):
         """Proses data yang diterima dari Arduino"""
         try:
@@ -626,7 +621,6 @@ class PullTesterApp:
                 data = self.arduino_queue.get_nowait()
                 self.arduino_buffer += data
 
-                # Proses setiap baris yang diakhiri '\n'
                 while '\n' in self.arduino_buffer:
                     line, self.arduino_buffer = self.arduino_buffer.split('\n', 1)
                     line = line.strip()
@@ -637,16 +631,7 @@ class PullTesterApp:
 
         self.root.after(10, self.process_arduino_queue)
 
-    # ✅ FIX: Handler pesan dari Arduino
     def handle_arduino_message(self, message: str):
-        """
-        Proses pesan yang diterima dari Arduino.
-        Contoh pesan yang mungkin dikirim Arduino:
-          'ready'  → Arduino siap
-          'started' → Arduino konfirmasi mulai
-          'stopped' → Arduino konfirmasi berhenti
-          'error'  → Arduino melaporkan error
-        """
         print(f"Arduino >> {message}")
         msg = message.lower()
 
@@ -659,7 +644,6 @@ class PullTesterApp:
         elif msg == "error":
             self.lbl_arduino_status.config(text="Error ✘", foreground="red")
         else:
-            # Tampilkan pesan lain apa adanya
             self.lbl_arduino_status.config(text=message, foreground="black")
 
 
